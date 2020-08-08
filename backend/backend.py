@@ -80,7 +80,8 @@ async def get_creators():
                 'viewsThousands': entry['views_thousands'],
                 'years': [entry['year_0'], entry['year_1']]
                 if entry['year_1'] else [entry['year_0']],
-                'yt': entry['yt']
+                'yt': entry['yt'],
+                'name': entry['name']
             }
 
         return final

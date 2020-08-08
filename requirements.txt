@@ -1,0 +1,4 @@
+quart==0.13.0
+asyncpg==0.20.1
+requests==2.24.0
+Quart-CORS==0.3.0

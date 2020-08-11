@@ -13,7 +13,7 @@ app = cors(app)
 
 pool: asyncpg.pool.Pool
 
-influx = InfluxDBClient('localhost', 8086, database='violetwtf')
+influx = InfluxDBClient(getenv('INFLUX_IP'), 8086, database='violetwtf')
 
 last_req = datetime.now() - timedelta(days=1)
 

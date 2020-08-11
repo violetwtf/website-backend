@@ -78,6 +78,7 @@ async def get_creators():
                 'subs': f'{subs_number} {subs_text}',
                 'current': entry['current'],
                 'viewsThousands': entry['views_thousands'],
+                'videoIds': entry['video_ids'],
                 'years': [entry['year_0'], entry['year_1']]
                 if entry['year_1'] else [entry['year_0']],
                 'yt': entry['yt'],

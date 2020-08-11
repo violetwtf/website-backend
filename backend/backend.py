@@ -141,7 +141,7 @@ async def update_data():
                             "time": iso_time,
                             "fields":
                                 {
-                                    "value": channel['statistics']['subscriberCount']
+                                    "value": int(channel['statistics']['subscriberCount'])
                                 }
                         }
                     )
@@ -162,7 +162,7 @@ async def update_data():
                             "time": iso_time,
                             "fields":
                                 {
-                                    "value": video['statistics']['viewCount']
+                                    "value": int(video['statistics']['viewCount'])
                                 }
                         }
                     )

@@ -1,10 +1,11 @@
-from quart import Quart
+from quart import Quart, request, jsonify
 from os import getenv
 from datetime import datetime, timedelta
 from quart_cors import cors
 from influxdb import InfluxDBClient
 import requests
 import asyncpg
+import secrets
 
 YOUTUBE = 'https://www.googleapis.com/youtube/v3/'
 
@@ -57,6 +58,11 @@ async def setup():
             channel_id text
         )
         """)
+        await con.execute("""
+        CREATE TABLE IF NOT EXISTS tokens (
+            token text PRIMARY KEY NOT NULL UNIQUE
+        )
+        """)
     finally:
         await pool.release(con)
 
@@ -91,6 +97,69 @@ async def get_creators():
         return final
     finally:
         await pool.release(con)
+
+
+@app.route('/login', methods=['POST'])
+async def login():
+    json = (await request.get_json())
+    print(json)
+    if json == getenv("PASSWORD"):
+        con = await acquire()
+        try:
+            token = secrets.token_hex(32)
+            await con.execute('INSERT INTO tokens (token) VALUES ($1)', token)
+        finally:
+            await pool.release(con)
+
+        return jsonify(token)
+    return "false"
+
+
+@app.route('/check', methods=['POST'])
+async def check():
+    json = (await (request.get_json()))
+
+    if not json:
+        return "false"
+
+    return jsonify(await check_token(json))
+
+
+@app.route('/videos', methods=['POST'])
+async def add_video():
+    json = (await (request.get_json()))
+
+    if not json \
+            or 'token' not in json \
+            or 'id' not in json \
+            or 'creator' not in json \
+            or not await check_token(json['token']):
+        return "false"
+
+    con = await acquire()
+    try:
+        await con.execute(
+            'UPDATE creators '
+            'SET video_ids = array_append(video_ids, $1) '
+            'WHERE id = $2',
+            json['id'], json['creator']
+        )
+        global last_req
+        last_req = datetime.now() - timedelta(days=1)
+        await update_data()
+    finally:
+        await pool.release(con)
+
+    return jsonify(True)
+
+
+async def check_token(token: str) -> bool:
+    con = await acquire()
+    try:
+        res = await con.fetchval('SELECT token FROM tokens WHERE token = $1', token)
+    finally:
+        await pool.release(con)
+    return bool(res)
 
 
 @app.before_request
@@ -147,9 +216,13 @@ async def update_data():
                     )
 
                 for video in video_json['items']:
-                    video_updates[video['snippet']['channelId']].append(
-                        int(int(video['statistics']['viewCount']) / 1000)
-                    )
+                    views = int(int(video['statistics']['viewCount']) / 1000)
+
+                    # Hack to allow for multiple creators having the same video
+                    for creator in res:
+                        if video['id'] in creator['video_ids']:
+                            video_updates[creator['channel_id']].append(views)
+
                     json_body.append(
                         {
                             "measurement": "views",

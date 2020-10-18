@@ -146,7 +146,7 @@ async def add_video():
         )
         global last_req
         last_req = datetime.now() - timedelta(days=1)
-        await update_data()
+        await update_data(False)
     finally:
         await pool.release(con)
 
@@ -163,7 +163,7 @@ async def check_token(token: str) -> bool:
 
 
 @app.before_request
-async def update_data():
+async def update_data(do_stats: bool = True):
     global last_req
 
     now = datetime.now()
@@ -247,7 +247,8 @@ async def update_data():
                         channel_id
                     )
 
-                influx.write_points(json_body)
+                if do_stats:
+                    influx.write_points(json_body)
         finally:
             await pool.release(con)
 

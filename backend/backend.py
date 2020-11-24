@@ -188,6 +188,8 @@ async def update_data(do_stats: bool = True):
                 channel_json = requests.get(get_url(channel_ids)).json()
                 video_json = requests.get(get_video_url(video_ids)).json()
 
+                print(video_json)
+
                 video_updates = {}
 
                 json_body = []

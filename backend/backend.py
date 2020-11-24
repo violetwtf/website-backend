@@ -186,7 +186,23 @@ async def update_data(do_stats: bool = True):
 
             async with con.transaction():
                 channel_json = requests.get(get_url(channel_ids)).json()
-                video_json = requests.get(get_video_url(video_ids)).json()
+                video_json = {'items': []}
+
+                count = 0
+                video_ids_chunk = []
+
+                for video_id in video_ids:
+                    count = count + 1
+                    video_ids_chunk.append(video_id)
+
+                    if count == 50 or video_ids[:1] == video_id:
+                        count = 0
+                        video_ids_chunk = []
+
+                        this_video_json = requests.get(get_video_url(video_ids_chunk)).json()
+
+                        for item in this_video_json['items']:
+                            video_json['items'].append(item)
 
                 print(video_json)
 

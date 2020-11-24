@@ -195,7 +195,7 @@ async def update_data(do_stats: bool = True):
                     count = count + 1
                     video_ids_chunk.append(video_id)
 
-                    if count == 50 or video_ids[:1] == video_id:
+                    if count == 50 or video_ids[:-1] == video_id:
                         count = 0
                         video_ids_chunk = []
 

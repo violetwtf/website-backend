@@ -231,7 +231,14 @@ async def update_data(do_stats: bool = True):
                         }
                     )
 
+                seen_ids = []
+
                 for video in video_json['items']:
+                    if video['id'] in seen_ids:
+                        continue
+                    else:
+                        seen_ids.append(video['id'])
+                    
                     views = int(int(video['statistics']['viewCount']) / 1000)
 
                     # Hack to allow for multiple creators having the same video

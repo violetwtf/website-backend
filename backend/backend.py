@@ -256,6 +256,9 @@ async def update_data(do_stats: bool = True):
                         }
                     )
 
+
+                print(video_updates)
+
                 for channel_id in video_updates:
                     await con.execute(
                         'UPDATE creators SET views_thousands = $1 WHERE channel_id = $2',

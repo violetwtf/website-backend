@@ -81,7 +81,7 @@ async def get_creators():
             subs_text = 'thousand'
 
             if subs_number >= 1000:
-                subs_number = math.floor((subs_number / 1000) * 100.0) / 100.0
+                subs_number = math.floor((subs_number / 1000) * 10.0) / 10.0
                 subs_text = 'million'
 
             final[entry['id']] = {

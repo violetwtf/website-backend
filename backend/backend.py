@@ -6,6 +6,7 @@ from influxdb import InfluxDBClient
 import requests
 import asyncpg
 import secrets
+import math
 
 YOUTUBE = 'https://www.googleapis.com/youtube/v3/'
 
@@ -80,7 +81,7 @@ async def get_creators():
             subs_text = 'thousand'
 
             if subs_number >= 1000:
-                subs_number = round(subs_number / 1000, 1)
+                subs_number = math.floor(subs_number / 1000)
                 subs_text = 'million'
 
             final[entry['id']] = {
@@ -238,7 +239,7 @@ async def update_data(do_stats: bool = True):
                         continue
                     else:
                         seen_ids.append(video['id'])
-                    
+
                     views = int(int(video['statistics']['viewCount']) / 1000)
 
                     # Hack to allow for multiple creators having the same video
@@ -262,9 +263,6 @@ async def update_data(do_stats: bool = True):
                                 }
                         }
                     )
-
-
-                print(video_updates)
 
                 for channel_id in video_updates:
                     await con.execute(
